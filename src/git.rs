@@ -22,15 +22,14 @@ fn make_fetch_options(auth: Option<&AuthConfig>) -> FetchOptions<'_> {
 }
 
 pub fn clone_or_open(url: &str, auth: Option<&AuthConfig>, dir: &Path) -> Result<Repository> {
-    if dir.exists() {
-        Repository::open(dir).with_context(|| format!("opening repo at {}", dir.display()))
-    } else {
-        let mut builder = git2::build::RepoBuilder::new();
-        builder.fetch_options(make_fetch_options(auth));
-        builder
-            .clone(url, dir)
-            .with_context(|| format!("cloning {} into {}", url, dir.display()))
+    if let Ok(repo) = Repository::open(dir) {
+        return Ok(repo);
     }
+    let mut builder = git2::build::RepoBuilder::new();
+    builder.fetch_options(make_fetch_options(auth));
+    builder
+        .clone(url, dir)
+        .with_context(|| format!("cloning {} into {}", url, dir.display()))
 }
 
 pub fn fetch_all(repo: &Repository, auth: Option<&AuthConfig>) -> Result<()> {

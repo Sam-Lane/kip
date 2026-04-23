@@ -1,8 +1,5 @@
-mod config;
-mod git;
-mod matcher;
-mod reconciler;
-mod runner;
+use kip::config;
+use kip::reconciler;
 
 use std::path::PathBuf;
 
