@@ -36,8 +36,9 @@ kip reads config from (in order of precedence):
 [[watcher]]
 name        = "my-terraform"
 repo        = "https://github.com/example/infra"
-reference   = "v1.*"          # exact ref, semver wildcard, or regex
-working_dir = "/var/kip/infra" # optional; defaults to /tmp/kip/<name>
+reference   = "v1.*"           # exact ref, semver wildcard, or regex
+dir         = "/var/kip/infra" # where the repo is cloned and stored (required)
+working_dir = "/var/kip/infra/env/prod" # cwd for the command (optional, defaults to dir)
 interval    = 60               # seconds between checks
 command     = "terraform apply --auto-approve"
 

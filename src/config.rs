@@ -14,6 +14,9 @@ pub struct WatcherConfig {
     pub name: String,
     pub repo: String,
     pub reference: String,
+    /// Where the repo is cloned and stored.
+    pub dir: PathBuf,
+    /// Directory passed as cwd when running the command. Defaults to `dir`.
     pub working_dir: Option<PathBuf>,
     #[serde(default = "default_interval")]
     pub interval: u64,

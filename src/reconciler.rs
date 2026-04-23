@@ -1,4 +1,3 @@
-use std::path::PathBuf;
 use std::time::Duration;
 
 use anyhow::Result;
@@ -12,16 +11,14 @@ use crate::matcher::resolve_best_ref;
 use crate::runner::run_command;
 
 pub async fn reconcile(watcher: WatcherConfig) -> Result<()> {
-    let working_dir = watcher
-        .working_dir
-        .clone()
-        .unwrap_or_else(|| PathBuf::from(format!("/tmp/kip/{}", watcher.name)));
+    let dir = &watcher.dir;
+    let working_dir = watcher.working_dir.as_deref().unwrap_or(dir);
 
-    std::fs::create_dir_all(&working_dir)?;
+    std::fs::create_dir_all(dir)?;
 
     info!(watcher = %watcher.name, "starting reconciler");
 
-    let repo = clone_or_open(&watcher.repo, watcher.auth.as_ref(), &working_dir)?;
+    let repo = clone_or_open(&watcher.repo, watcher.auth.as_ref(), dir)?;
     let mut last_oid: Option<Oid> = None;
     let mut interval = time::interval(Duration::from_secs(watcher.interval));
 
@@ -54,7 +51,7 @@ pub async fn reconcile(watcher: WatcherConfig) -> Result<()> {
             "change detected, running command"
         );
 
-        if let Err(e) = run_command(&watcher.command, &working_dir).await {
+        if let Err(e) = run_command(&watcher.command, working_dir).await {
             error!(watcher = %watcher.name, "command failed: {e:#}");
         } else {
             info!(watcher = %watcher.name, "command completed successfully");
