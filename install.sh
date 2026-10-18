@@ -22,9 +22,10 @@ esac
 # --- detect arch ---
 ARCH=$(uname -m)
 case "$ARCH" in
-  x86_64) ARCH_PREFIX="x86_64" ;;
+  x86_64)          ARCH_PREFIX="x86_64" ;;
+  aarch64 | arm64) ARCH_PREFIX="aarch64" ;;
   *)
-    echo "error: unsupported architecture: $ARCH (only x86_64 is currently released)" >&2
+    echo "error: unsupported architecture: $ARCH" >&2
     exit 1
     ;;
 esac
