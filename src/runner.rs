@@ -3,7 +3,7 @@ use std::process::Stdio;
 
 use anyhow::{bail, Context, Result};
 use tokio::io::{AsyncBufReadExt, BufReader};
-use tracing::{info, warn};
+use tracing::info;
 
 pub async fn run_command(command: &str, working_dir: &Path) -> Result<()> {
     let parts = shell_words(command);
@@ -25,18 +25,24 @@ pub async fn run_command(command: &str, working_dir: &Path) -> Result<()> {
     let mut stdout_lines = BufReader::new(stdout).lines();
     let mut stderr_lines = BufReader::new(stderr).lines();
 
+    let mut stdout_done = false;
+    let mut stderr_done = false;
+
     loop {
+        if stdout_done && stderr_done {
+            break;
+        }
         tokio::select! {
-            line = stdout_lines.next_line() => {
+            line = stdout_lines.next_line(), if !stdout_done => {
                 match line? {
-                    Some(l) => info!(target: "runner", "{l}"),
-                    None => break,
+                    Some(l) => info!(target: "runner", stream = "stdout", "{l}"),
+                    None => stdout_done = true,
                 }
             }
-            line = stderr_lines.next_line() => {
+            line = stderr_lines.next_line(), if !stderr_done => {
                 match line? {
-                    Some(l) => warn!(target: "runner", "{l}"),
-                    None => {}
+                    Some(l) => info!(target: "runner", stream = "stderr", "{l}"),
+                    None => stderr_done = true,
                 }
             }
         }

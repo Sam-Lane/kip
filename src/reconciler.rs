@@ -3,7 +3,7 @@ use std::time::Duration;
 use anyhow::Result;
 use git2::Oid;
 use tokio::time;
-use tracing::{error, info, warn};
+use tracing::{debug, error, info, warn};
 
 use crate::config::WatcherConfig;
 use crate::git::{clone_or_open, fetch_all, reset_hard};
@@ -39,6 +39,7 @@ pub async fn reconcile(watcher: WatcherConfig) -> Result<()> {
         };
 
         if Some(oid) == last_oid {
+            debug!(watcher = %watcher.name, oid = %oid, "no change");
             continue;
         }
 

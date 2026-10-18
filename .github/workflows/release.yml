@@ -32,6 +32,13 @@ jobs:
           targets: ${{ matrix.target }}
       - uses: Swatinem/rust-cache@v2
 
+      - name: Set OpenSSL path (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          echo "OPENSSL_DIR=C:\Strawberry\c" >> $env:GITHUB_ENV
+          echo "OPENSSL_STATIC=1" >> $env:GITHUB_ENV
+
       - name: Build
         run: cargo build --release --target ${{ matrix.target }}
 
