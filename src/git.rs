@@ -51,6 +51,13 @@ pub fn fetch_all(repo: &Repository, auth: Option<&AuthConfig>) -> Result<()> {
     Ok(())
 }
 
+pub fn reset_hard(repo: &Repository, oid: git2::Oid) -> Result<()> {
+    let obj = repo.find_object(oid, None).context("finding commit object")?;
+    repo.reset(&obj, git2::ResetType::Hard, None)
+        .context("resetting working tree to new HEAD")?;
+    Ok(())
+}
+
 pub fn list_tags(repo: &Repository) -> Result<Vec<String>> {
     let tags = repo.tag_names(None).context("listing tags")?;
     Ok(tags.iter().flatten().map(|s| s.to_owned()).collect())

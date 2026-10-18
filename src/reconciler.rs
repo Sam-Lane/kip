@@ -6,7 +6,7 @@ use tokio::time;
 use tracing::{error, info, warn};
 
 use crate::config::WatcherConfig;
-use crate::git::{clone_or_open, fetch_all};
+use crate::git::{clone_or_open, fetch_all, reset_hard};
 use crate::matcher::resolve_best_ref;
 use crate::runner::run_command;
 
@@ -50,6 +50,11 @@ pub async fn reconcile(watcher: WatcherConfig) -> Result<()> {
             to = %oid,
             "change detected, running command"
         );
+
+        if let Err(e) = reset_hard(&repo, oid) {
+            error!(watcher = %watcher.name, "reset failed: {e:#}");
+            continue;
+        }
 
         if let Err(e) = run_command(&watcher.command, working_dir).await {
             error!(watcher = %watcher.name, "command failed: {e:#}");
