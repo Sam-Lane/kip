@@ -22,7 +22,7 @@ fn make_fetch_options(auth: Option<&AuthConfig>) -> FetchOptions<'_> {
 }
 
 pub fn clone_or_open(url: &str, auth: Option<&AuthConfig>, dir: &Path) -> Result<Repository> {
-    if dir.exists() {
+    if dir.join(".git").exists() {
         Repository::open(dir).with_context(|| format!("opening repo at {}", dir.display()))
     } else {
         let mut builder = git2::build::RepoBuilder::new();
