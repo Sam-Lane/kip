@@ -15,15 +15,19 @@ jobs:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             archive: tar
+            build_flags: ""
           - os: macos-13
             target: x86_64-apple-darwin
             archive: tar
+            build_flags: ""
           - os: macos-latest
             target: aarch64-apple-darwin
             archive: tar
+            build_flags: ""
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             archive: zip
+            build_flags: "--features git2/vendored-openssl"
 
     steps:
       - uses: actions/checkout@v4
@@ -32,15 +36,13 @@ jobs:
           targets: ${{ matrix.target }}
       - uses: Swatinem/rust-cache@v2
 
-      - name: Set OpenSSL path (Windows)
+      - name: Add NASM to PATH (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
-        run: |
-          echo "OPENSSL_DIR=C:\Strawberry\c" >> $env:GITHUB_ENV
-          echo "OPENSSL_STATIC=1" >> $env:GITHUB_ENV
+        run: echo "C:\Program Files\NASM" >> $env:GITHUB_PATH
 
       - name: Build
-        run: cargo build --release --target ${{ matrix.target }}
+        run: cargo build --release --target ${{ matrix.target }} ${{ matrix.build_flags }}
 
       - name: Package (tar)
         if: matrix.archive == 'tar'

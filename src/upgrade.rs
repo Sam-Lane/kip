@@ -4,14 +4,16 @@ use anyhow::{bail, Context, Result};
 use semver::Version;
 use serde::Deserialize;
 
-#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
-const TARGET: &str = "x86_64-unknown-linux-gnu";
-#[cfg(all(target_os = "macos", target_arch = "x86_64"))]
-const TARGET: &str = "x86_64-apple-darwin";
-#[cfg(all(target_os = "macos", target_arch = "aarch64"))]
-const TARGET: &str = "aarch64-apple-darwin";
-#[cfg(target_os = "windows")]
-compile_error!("kip upgrade is not supported on Windows — re-run install.sh");
+fn target() -> Result<&'static str> {
+    #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+    return Ok("x86_64-unknown-linux-gnu");
+    #[cfg(all(target_os = "macos", target_arch = "x86_64"))]
+    return Ok("x86_64-apple-darwin");
+    #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
+    return Ok("aarch64-apple-darwin");
+    #[allow(unreachable_code)]
+    bail!("kip upgrade is not supported on this platform — re-run install.sh")
+}
 
 const REPO: &str = "Sam-Lane/kip";
 const CURRENT_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -52,9 +54,11 @@ pub async fn run() -> Result<()> {
         return Ok(());
     }
 
+    let target = target()?;
+
     println!("Upgrading v{current} → {tag}");
 
-    let archive_name = format!("kip-{tag}-{TARGET}.tar.gz");
+    let archive_name = format!("kip-{tag}-{target}.tar.gz");
     let url = format!(
         "https://github.com/{REPO}/releases/download/{tag}/{archive_name}"
     );
