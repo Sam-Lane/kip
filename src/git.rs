@@ -57,8 +57,15 @@ pub fn list_tags(repo: &Repository) -> Result<Vec<String>> {
 }
 
 pub fn resolve_oid(repo: &Repository, refname: &str) -> Result<git2::Oid> {
+    let remote_ref = format!("refs/remotes/origin/{refname}");
+    let candidate = if repo.find_reference(&remote_ref).is_ok() {
+        remote_ref
+    } else {
+        refname.to_string()
+    };
+
     let obj = repo
-        .revparse_single(refname)
+        .revparse_single(&candidate)
         .with_context(|| format!("resolving ref {refname}"))?;
     let commit = obj.peel_to_commit().context("peeling to commit")?;
     Ok(commit.id())
