@@ -3,11 +3,12 @@ mod git;
 mod matcher;
 mod reconciler;
 mod runner;
+mod upgrade;
 
 use std::path::PathBuf;
 
 use anyhow::Result;
-use clap::Parser;
+use clap::{Parser, Subcommand};
 use tracing::info;
 
 #[derive(Parser)]
@@ -16,6 +17,15 @@ struct Cli {
     /// Path to a kip config file (overrides /etc/kip defaults and KIP_CONFIG)
     #[arg(long, env = "KIP_CONFIG", value_name = "PATH")]
     config_path: Option<PathBuf>,
+
+    #[command(subcommand)]
+    command: Option<Commands>,
+}
+
+#[derive(Subcommand)]
+enum Commands {
+    /// Download and install the latest kip release
+    Upgrade,
 }
 
 #[tokio::main]
@@ -28,6 +38,11 @@ async fn main() -> Result<()> {
         .init();
 
     let cli = Cli::parse();
+
+    if let Some(Commands::Upgrade) = cli.command {
+        return upgrade::run().await;
+    }
+
     let cfg = config::load_config(cli.config_path)?;
 
     if cfg.watcher.is_empty() {
